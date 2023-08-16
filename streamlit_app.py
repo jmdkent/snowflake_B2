@@ -42,7 +42,6 @@ try:
 except URLError as e:
     streamlit.error()
 
-
 #Create the repeatable code block (called a function)
 def get_fruityvice_data(this_fruit_choice):
   fruityvice_response = requests.get("https://fruityvice.com/api/fruit/" + this_fruit_choice)
@@ -59,7 +58,18 @@ try:
     back_from_function = get_fruityvice_data(fruit_choice)
     streamlit.dataframe(back_from_function)
 
+streamlit.header("The fruit load list contains:")
+#Snowflake-related functions
+def get_fruit_load_list():
+  with my_cnx.cursor() as my_cur():
+    my_cur.execute("Select * from fruit_load_list")
+    return my_cur.fetchall()
 
+#Add button to load the fruit
+if streamlit.button('Get Fruit Load List"):
+  my_cnx = snowflake.connector.connect(**streamlit.secrets["snowflake"])
+  my_data_rows = get_fruit_load_list()
+  streamlit.dataframe(my_data_rows)
 
 #Dont run anything past here while we troubleshoot
 streamlit.stop()
