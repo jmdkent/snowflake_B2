@@ -4,7 +4,6 @@ import streamlit
 import pandas
 import requests
 import snowflake.connector
-import psycopg2
 
 from urllib.error import URLError
 
@@ -49,45 +48,29 @@ try:
 except URLError as e:
   streamlit.error()
 
-
 #streamlit.stop()
-
 
 #Snowflake-related functions
 def get_fruit_load_list():
   my_cnx = snowflake.connector.connect(**streamlit.secrets["snowflake"])
   with my_cnx.cursor() as my_cur:
     my_cur.execute("select * from fruit_load_list;")
-    #conn.execute("select * from fruit_load_list;")
     return my_cur.fetchall()
 
-#@streamlit.experimental_singleton
-#def init_connection():
-    #return psycopg2.connect(**streamlit.secrets["postgres"])
-
-  
 streamlit.header("View Our Fruit List - Add Your Favorites!")
 # Add a button to load the fruit
 if streamlit.button('Get Fruit List'):
-  #conn = init_connection()
   my_cnx = snowflake.connector.connect(**streamlit.secrets["snowflake"])
   my_data_rows = get_fruit_load_list()
-  #conn.close()
-  #my_cnx.close()
+  my_cnx.close()
   streamlit.dataframe(my_data_rows)
-
 
 def insert_row_snowflake(new_fruit):
   with my_cnx.cursor() as my_cur:
     my_cur.execute("insert into fruit_load_list (fruit_name) values ('" + new_fruit + "');")
     return "Thanks for adding " + new_fruit
 
-  
 add_my_fruit = streamlit.text_input('What fruit would you like to add?')
 if streamlit.button('Add a Fruit to the List'):
-  #conn = init_connection()
-  my_cnx = snowflake.connector.connect(**streamlit.secrets["snowflake"])
   back_from_function = insert_row_snowflake(add_my_fruit)
-  #conn.commit()
-  #conn.close()
   streamlit.text(back_from_function)
